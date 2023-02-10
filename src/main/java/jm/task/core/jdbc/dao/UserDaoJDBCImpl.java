@@ -14,81 +14,48 @@ public class UserDaoJDBCImpl implements UserDao {
 
     @Override
     public void createUsersTable() {
-        Connection connection = null;
-        Statement statement = null;
-        try {
-            connection = Util.getMySQLConnection();
-            statement = connection.createStatement();
+        try (Connection connection = Util.getMySQLConnection();
+             Statement statement = connection.createStatement()) {
             statement.execute("CREATE TABLE IF NOT EXISTS users(id int primary key auto_increment, name varchar(40), lastName varchar(40), age int );");
             System.out.println("Table users is created");
         } catch (SQLException throwables) {
             throwables.printStackTrace();
-        } finally {
-            try {
-                connection.close();
-                statement.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
     }
 
     @Override
     public void dropUsersTable() {
-        Connection connection = null;
-        Statement statement = null;
-        try {
-            connection = Util.getMySQLConnection();
-            statement = connection.createStatement();
+        try (Connection connection = Util.getMySQLConnection();
+             Statement statement = connection.createStatement()) {
             statement.execute("DROP TABLE IF EXISTS users;");
             System.out.println("Table users is deleted");
         } catch (SQLException throwables) {
             throwables.printStackTrace();
-        } finally {
-            try {
-                connection.close();
-                statement.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
     }
 
     @Override
     public void saveUser(String name, String lastName, byte age) {
-        Connection connection = null;
-        PreparedStatement statement = null;
         final String INSERT_NEW_USER = "INSERT INTO users(name, lastname, age)"
                 + " VALUES(?,?,?)";
-        try {
-            connection = Util.getMySQLConnection();
-            statement = connection.prepareStatement(INSERT_NEW_USER);
-            statement.setString(1, name);
-            statement.setString(2, lastName);
-            statement.setByte(3, age);
-            statement.execute();
+        try (Connection connection = Util.getMySQLConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(INSERT_NEW_USER)) {
+            preparedStatement.setString(1, name);
+            preparedStatement.setString(2, lastName);
+            preparedStatement.setByte(3, age);
+            preparedStatement.execute();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
-        } finally {
-            try {
-                connection.close();
-                statement.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
     }
 
     @Override
     public void removeUserById(long id) {
-        Connection connection = null;
-        PreparedStatement statement = null;
         final String DELETE_USER = "DELETE FROM users WHERE id = ?";
-        try {
-            connection = Util.getMySQLConnection();
-            statement = connection.prepareStatement(DELETE_USER);
-            statement.setLong(1, id);
-            int rez = statement.executeUpdate();
+        try (Connection connection = Util.getMySQLConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(DELETE_USER)) {
+            preparedStatement.setLong(1, id);
+            int rez = preparedStatement.executeUpdate();
             if (rez != 0) {
                 System.out.println("User " + id + " deleted");
             } else {
@@ -96,25 +63,15 @@ public class UserDaoJDBCImpl implements UserDao {
             }
         } catch (SQLException throwables) {
             throwables.printStackTrace();
-        } finally {
-            try {
-                connection.close();
-                statement.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
-
     }
 
     @Override
     public List<User> getAllUsers() {
-        Connection connection = null;
-        Statement statement = null;
+
         List<User> users = new ArrayList<>();
-        try {
-            connection = Util.getMySQLConnection();
-            statement = connection.createStatement();
+        try (Connection connection = Util.getMySQLConnection();
+             Statement statement = connection.createStatement()) {
             ResultSet resultSet = statement.executeQuery("SELECT * FROM users");
             while (resultSet.next()) {
                 Long id = resultSet.getLong("id");
@@ -127,38 +84,21 @@ public class UserDaoJDBCImpl implements UserDao {
             }
         } catch (SQLException throwables) {
             throwables.printStackTrace();
-        } finally {
-            try {
-                connection.close();
-                statement.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
         return users;
     }
 
     @Override
     public void cleanUsersTable() {
-        Connection connection = null;
-        PreparedStatement statement = null;
         final String DELETE_ALL_USERS = "DELETE FROM users";
-        try {
-            connection = Util.getMySQLConnection();
-            statement = connection.prepareStatement(DELETE_ALL_USERS);
-            int rez = statement.executeUpdate();
+        try (Connection connection = Util.getMySQLConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(DELETE_ALL_USERS)) {
+            int rez = preparedStatement.executeUpdate();
             if (rez != 0) {
                 System.out.println("The table users is cleared");
             }
         } catch (SQLException throwables) {
             throwables.printStackTrace();
-        } finally {
-            try {
-                connection.close();
-                statement.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
     }
 }
