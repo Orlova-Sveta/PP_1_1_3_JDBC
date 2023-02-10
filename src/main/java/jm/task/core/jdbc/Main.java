@@ -1,12 +1,12 @@
 package jm.task.core.jdbc;
 
-import jm.task.core.jdbc.dao.UserDao;
-import jm.task.core.jdbc.dao.UserDaoJDBCImpl;
+import jm.task.core.jdbc.service.UserService;
+import jm.task.core.jdbc.service.UserServiceImpl;
 
 public class Main {
     public static void main(String[] args) {
         // реализуйте алгоритм здесь
-        UserDao userService = new UserDaoJDBCImpl();
+        UserService userService = new UserServiceImpl();
         userService.dropUsersTable();// На всякий случай чистим
         userService.createUsersTable();
         userService.saveUser("Pet", "Reg", (byte) 13);
