@@ -3,16 +3,18 @@ package jm.task.core.jdbc.dao;
 import jm.task.core.jdbc.model.User;
 import jm.task.core.jdbc.util.Util;
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
 import java.util.List;
+
+import static org.hibernate.resource.transaction.spi.TransactionStatus.ACTIVE;
+import static org.hibernate.resource.transaction.spi.TransactionStatus.MARKED_ROLLBACK;
 
 public class UserDaoHibernateImpl implements UserDao {
     public UserDaoHibernateImpl() {
 
     }
-
-
     @Override
     public void createUsersTable() {
         Session session = Util.getSessionFactory().openSession();
@@ -35,26 +37,41 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public void saveUser(String name, String lastName, byte age) {
-        Session session = Util.getSessionFactory().openSession();
-        session.beginTransaction();
-        User user = new User();
-        user.setName(name);
-        user.setLastName(lastName);
-        user.setAge(age);
-        session.save(user);
-        session.getTransaction().commit();
-        session.close();
+        Transaction transaction = null;
+        try (Session session = Util.getSessionFactory().openSession()) {
+            transaction = session.beginTransaction();
+            User user = new User();
+            user.setName(name);
+            user.setLastName(lastName);
+            user.setAge(age);
+            session.save(user);
+            session.getTransaction().commit();
+            session.close();
+        } catch (Exception e) {
+            if (transaction != null || transaction.getStatus() == ACTIVE
+                    || transaction.getStatus() == MARKED_ROLLBACK) {
+                transaction.rollback();
+            }
+        }
     }
 
     @Override
     public void removeUserById(long id) {
-        Session session = Util.getSessionFactory().openSession();
-        session.beginTransaction();
-        Query query = session.createQuery("delete User where id = :param");
-        query.setParameter("param", id);
-        int result = query.executeUpdate();
-        session.getTransaction().commit();
-        session.close();
+        Transaction transaction = null;
+        try (Session session = Util.getSessionFactory().openSession()) {
+            transaction = session.beginTransaction();
+            Query query = session.createQuery("delete User where id = :param");
+            query.setParameter("param", id);
+            query.executeUpdate();
+            transaction.commit();
+            session.close();
+        } catch (Exception e) {
+            if (transaction != null || transaction.getStatus() == ACTIVE
+                    || transaction.getStatus() == MARKED_ROLLBACK) {
+                transaction.rollback();
+            }
+        }
+
     }
 
     @Override
@@ -71,11 +88,17 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public void cleanUsersTable() {
-        Session session = Util.getSessionFactory().openSession();
-        session.beginTransaction();
-        Query query = session.createSQLQuery("TRUNCATE TABLE users");
-        int result = query.executeUpdate();
-        session.getTransaction().commit();
-        session.close();
+        Transaction transaction = null;
+        try (Session session = Util.getSessionFactory().openSession();) {
+            transaction = session.beginTransaction();
+            Query query = session.createSQLQuery("TRUNCATE TABLE users");
+            query.executeUpdate();
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null || transaction.getStatus() == ACTIVE
+                    || transaction.getStatus() == MARKED_ROLLBACK) {
+                transaction.rollback();
+            }
+        }
     }
 }
