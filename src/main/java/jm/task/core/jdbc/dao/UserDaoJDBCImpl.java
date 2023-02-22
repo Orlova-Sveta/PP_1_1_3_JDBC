@@ -14,7 +14,7 @@ public class UserDaoJDBCImpl implements UserDao {
 
     @Override
     public void createUsersTable() {
-        try (Connection connection = Util.getMySQLConnection();
+        try (Connection connection = Util.getConnection();
              Statement statement = connection.createStatement()) {
             statement.execute("CREATE TABLE IF NOT EXISTS users(id int primary key auto_increment, name varchar(40), lastName varchar(40), age int );");
             System.out.println("Table users is created");
@@ -25,7 +25,7 @@ public class UserDaoJDBCImpl implements UserDao {
 
     @Override
     public void dropUsersTable() {
-        try (Connection connection = Util.getMySQLConnection();
+        try (Connection connection = Util.getConnection();
              Statement statement = connection.createStatement()) {
             statement.execute("DROP TABLE IF EXISTS users;");
             System.out.println("Table users is deleted");
@@ -38,7 +38,7 @@ public class UserDaoJDBCImpl implements UserDao {
     public void saveUser(String name, String lastName, byte age) {
         final String INSERT_NEW_USER = "INSERT INTO users(name, lastname, age)"
                 + " VALUES(?,?,?)";
-        try (Connection connection = Util.getMySQLConnection();
+        try (Connection connection = Util.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(INSERT_NEW_USER)) {
             preparedStatement.setString(1, name);
             preparedStatement.setString(2, lastName);
@@ -52,7 +52,7 @@ public class UserDaoJDBCImpl implements UserDao {
     @Override
     public void removeUserById(long id) {
         final String DELETE_USER = "DELETE FROM users WHERE id = ?";
-        try (Connection connection = Util.getMySQLConnection();
+        try (Connection connection = Util.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(DELETE_USER)) {
             preparedStatement.setLong(1, id);
             int rez = preparedStatement.executeUpdate();
@@ -70,7 +70,7 @@ public class UserDaoJDBCImpl implements UserDao {
     public List<User> getAllUsers() {
 
         List<User> users = new ArrayList<>();
-        try (Connection connection = Util.getMySQLConnection();
+        try (Connection connection = Util.getConnection();
              Statement statement = connection.createStatement()) {
             ResultSet resultSet = statement.executeQuery("SELECT * FROM users");
             while (resultSet.next()) {
@@ -91,7 +91,7 @@ public class UserDaoJDBCImpl implements UserDao {
     @Override
     public void cleanUsersTable() {
         final String DELETE_ALL_USERS = "DELETE FROM users";
-        try (Connection connection = Util.getMySQLConnection();
+        try (Connection connection = Util.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(DELETE_ALL_USERS)) {
             int rez = preparedStatement.executeUpdate();
             if (rez != 0) {
